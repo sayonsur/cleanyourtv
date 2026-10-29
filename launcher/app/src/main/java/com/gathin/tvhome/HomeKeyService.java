@@ -98,12 +98,18 @@ public class HomeKeyService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         running = this;
+        VolumeOverlay.reset();
         settingsScancodes = getResources().getIntArray(R.array.settings_key_scancodes);
         if (volumeReceiver == null) {
             volumeReceiver = new BroadcastReceiver() {
                 private int lastVal = -1;
                 @Override
                 public void onReceive(Context context, Intent intent) {
+                    if ("com.gathin.tvhome.TEST_VOLUME".equals(intent.getAction())) {
+                        int dir = intent.getIntExtra("direction", VolumeOverlay.DIRECTION_UP);
+                        VolumeOverlay.show(HomeKeyService.this, dir);
+                        return;
+                    }
                     if ("android.media.VOLUME_CHANGED_ACTION".equals(intent.getAction())) {
                         int streamType = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1);
                         int val = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1);
@@ -120,7 +126,9 @@ public class HomeKeyService extends AccessibilityService {
                     }
                 }
             };
-            registerReceiver(volumeReceiver, new IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
+            IntentFilter volumeFilter = new IntentFilter("android.media.VOLUME_CHANGED_ACTION");
+            volumeFilter.addAction("com.gathin.tvhome.TEST_VOLUME");
+            registerReceiver(volumeReceiver, volumeFilter);
         }
         // The service is directBootAware: Android 11 skips a service that is not while the user is still
         // locked at boot, writes accessibility_enabled=0 and, on TCL G03 firmware, never binds it after the
@@ -180,6 +188,7 @@ public class HomeKeyService extends AccessibilityService {
         }
         if (gamepads != null) gamepads.stop();
         if (consumeVolumeKeys) VolumeKeys.stop();
+        VolumeOverlay.reset();
         super.onDestroy();
     }
 

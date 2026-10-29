@@ -31,14 +31,34 @@ final class VolumeOverlay {
     private static final Runnable dismissRunnable = VolumeOverlay::hide;
     private static boolean isShowing = false;
 
+    static void reset() {
+        handler.post(() -> {
+            try {
+                if (isShowing && wm != null && overlayView != null) {
+                    if (overlayView.isAttachedToWindow()) {
+                        wm.removeViewImmediate(overlayView);
+                    }
+                }
+            } catch (Exception ignored) {}
+            isShowing = false;
+            overlayView = null;
+            wm = null;
+        });
+    }
+
     static void show(Context context, int direction) {
         handler.post(() -> {
             try {
-                if (wm == null) {
-                    wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-                }
+                wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
-                if (overlayView == null) {
+                if (overlayView == null || overlayView.getContext() != context) {
+                    if (overlayView != null && overlayView.getParent() != null && wm != null) {
+                        try {
+                            wm.removeViewImmediate(overlayView);
+                        } catch (Exception ignored) {}
+                    }
+                    isShowing = false;
+
                     overlayView = new LinearLayout(context);
                     overlayView.setOrientation(LinearLayout.VERTICAL);
                     overlayView.setGravity(Gravity.CENTER);
@@ -107,11 +127,6 @@ final class VolumeOverlay {
                 }
 
                 if (!isShowing && wm != null) {
-                    if (overlayView.getParent() != null) {
-                        try {
-                            wm.removeViewImmediate(overlayView);
-                        } catch (Exception ignored) {}
-                    }
                     WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                         dp(context, 50),
                         dp(context, 96),
@@ -122,15 +137,22 @@ final class VolumeOverlay {
                     );
                     lp.gravity = Gravity.CENTER_VERTICAL | Gravity.END;
                     lp.x = dp(context, 32);
-                    wm.addView(overlayView, lp);
-                    isShowing = true;
-                    Log.d(TAG, "Vertical side overlay shown, dir=" + direction);
+                    try {
+                        wm.addView(overlayView, lp);
+                        isShowing = true;
+                        Log.d(TAG, "Vertical side overlay shown, dir=" + direction);
+                    } catch (Exception addEx) {
+                        Log.e(TAG, "wm.addView failed", addEx);
+                        isShowing = false;
+                        overlayView = null;
+                    }
                 }
 
                 handler.removeCallbacks(dismissRunnable);
                 handler.postDelayed(dismissRunnable, 1800);
             } catch (Exception e) {
                 Log.e(TAG, "show error", e);
+                isShowing = false;
             }
         });
     }

@@ -260,7 +260,7 @@
                             android:gravity="left"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:singleLine="@bool/date_single_line"
+                            android:singleLine="false"
                             android:maxLines="2"
                             android:lineSpacingExtra="6dp"
                             android:ellipsize="end"
@@ -348,6 +348,13 @@
                     android:nextFocusDown="@+id/grid" />
 
                 <TextView
+                    android:id="@+id/btnSports"
+                    style="@style/TopButtonIcon"
+                    android:contentDescription="@string/sports"
+                    android:drawableStart="@drawable/ic_sports"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
                     android:id="@+id/btnReorder"
                     style="@style/TopButtonIcon"
                     android:contentDescription="@string/reorder"
@@ -364,8 +371,8 @@
 
                 <TextView
                     android:id="@+id/btnSettings"
-                    style="@style/TopButton"
-                    android:text="@string/settings"
+                    style="@style/TopButtonIcon"
+                    android:contentDescription="@string/settings"
                     android:drawableStart="@drawable/ic_settings"
                     android:nextFocusDown="@+id/grid" />
             </LinearLayout>
