@@ -135,7 +135,23 @@ This script will:
 
 ---
 
-## 5. Security Shutdown Checklist (Current Step)
+## 5. GitHub Branches & Pull Requests Guide
+
+### Overview of Branches in `sayonsur/cleanyourtv`:
+
+| Branch | Purpose | Upstream Target | Status | Compare / PR Link |
+| :--- | :--- | :--- | :--- | :--- |
+| `feature/mitv-axfr1-arc-volume` | **Your Personal TV Fork Branch** (active on TV, contains ARC volume overlay, sports feed, reversal script v2, debloat, custom guides) | None (stays in your fork) | Clean & Pushed | [Commit bc433cc1](https://github.com/sayonsur/cleanyourtv/commit/bc433cc1) |
+| `showcase-hdmi-arc-volume` | **PR 1**: Adds row under Forks in `SHOWCASE.md` & brand index in `README.md` | `Gathin23/cleanyourtv:main` | Clean & Pushed | [Open PR 1](https://github.com/Gathin23/cleanyourtv/compare/main...sayonsur:cleanyourtv:showcase-hdmi-arc-volume?expand=1) |
+| `docs-mitv-axfr1-device-note` | **PR 2**: Device note `docs/devices/xiaomi-mitv-axfr1.md` and `examples/xiaomi-mitv-axfr1/tv.json` | `Gathin23/cleanyourtv:main` | Clean & Pushed | [Open PR 2](https://github.com/Gathin23/cleanyourtv/compare/main...sayonsur:cleanyourtv:docs-mitv-axfr1-device-note?expand=1) |
+| `feature/sports-recommendations` | Sports recommendation feed + compact settings drawer cleanly based on `upstream/main` | `Gathin23/cleanyourtv:main` | Clean & Pushed | [Open PR (Optional)](https://github.com/sayonsur/cleanyourtv/pull/new/feature/sports-recommendations) |
+
+> [!NOTE]
+> Upstream maintainer Gathin keeps the core launcher strictly under **576 KB** and **100% offline** (no `INTERNET` permission in manifest). Heavy features like live internet feeds and volume overlays belong in forks or external add-ons (like `addons/game-day`). Keep `feature/mitv-axfr1-arc-volume` as your daily-driver branch!
+
+---
+
+## 6. Security Shutdown Checklist (Current Step)
 
 Whenever you finish modifying the TV:
 1. Open TV **Settings** &rarr; **Device Preferences** &rarr; **Developer options**.
