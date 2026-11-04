@@ -41,6 +41,7 @@ printf '%s\n' \
   "am broadcast -a $PKG.SET_SETTING -n $PKG/.SettingsReceiver --es key boot_auto_start --es value true" \
   "dumpsys deviceidle whitelist +$PKG" \
   "cmd appops set $PKG RUN_IN_BACKGROUND allow" \
+  "cmd appops set $PKG SYSTEM_ALERT_WINDOW allow" \
   "am start -n $PKG/.MainActivity" \
   "input keyevent KEYCODE_HOME" \
   | tv --batch

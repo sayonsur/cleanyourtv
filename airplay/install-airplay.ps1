@@ -107,8 +107,9 @@ if ($RequirePin) {
 # Exempt from battery optimization (Doze)
 adb -s $adbTarget shell dumpsys deviceidle whitelist +$PKG | Out-Null
 
-# Allow running in background
+# Allow running in background and launching UI on incoming stream
 adb -s $adbTarget shell cmd appops set $PKG RUN_IN_BACKGROUND allow | Out-Null
+adb -s $adbTarget shell cmd appops set $PKG SYSTEM_ALERT_WINDOW allow | Out-Null
 
 # 6. Start service & return to Home
 Write-Host "[6/6] Initializing background service and returning to Home..." -ForegroundColor Yellow
