@@ -135,6 +135,19 @@ This script will:
 - Disable the accessibility volume overlay service.
 - Reset Private DNS mode to `opportunistic` (default).
 
+### E. AirPlay Receiver & 1-Click Reversal
+Installs or uninstalls open-source AirPlay server (`io.github.jqssun.airplay`) ported from `nguyenduchoai/tv-vibehack:feat/airplay-receiver`:
+
+```powershell
+Set-Location "C:\Users\sayon\OneDrive\Documents\gemini\cleanyourtv"
+
+# Install and configure AirPlay background receiver:
+powershell -ExecutionPolicy Bypass -File .\airplay\install-airplay.ps1 -TvHost 192.168.29.16
+
+# 1-Click Reversal (cleanly uninstalls package, removes Doze whitelist, resets permissions):
+powershell -ExecutionPolicy Bypass -File .\airplay\uninstall-airplay.ps1 -TvHost 192.168.29.16
+```
+
 ---
 
 ## 5. GitHub Branches & Pull Requests Guide

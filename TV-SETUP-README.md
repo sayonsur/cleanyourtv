@@ -156,6 +156,20 @@ $py = ".\tools\venv\Scripts\python.exe"
 & $py tools\tv.py "dumpsys audio | grep -E 'mArcEstablished|mSystemAudioActivated'"
 ```
 
+### 5. AirPlay Receiver (iPhone / iPad / Mac Mirroring)
+Turn your TV into an Apple AirPlay receiver powered by open-source [android-airplay-server](https://github.com/jqssun/android-airplay-server) (`io.github.jqssun.airplay`), running as an isolated ~40 MB background service with zero bloat and automatic fullscreen invocation:
+
+```powershell
+Set-Location "C:\Users\sayon\OneDrive\Documents\gemini\cleanyourtv"
+
+# 1. Install & Configure AirPlay Receiver
+powershell -ExecutionPolicy Bypass -File .\airplay\install-airplay.ps1 -TvHost 192.168.29.16
+
+# 2. 1-Click Reversal / Complete Removal
+# Safely removes the AirPlay package, cleans battery Doze whitelists, and resets appops
+powershell -ExecutionPolicy Bypass -File .\airplay\uninstall-airplay.ps1 -TvHost 192.168.29.16
+```
+
 ---
 
 ## Future Gemini Sessions
