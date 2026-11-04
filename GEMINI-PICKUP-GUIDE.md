@@ -23,7 +23,9 @@ This document explains everything set up on this device and provides a step-by-s
   - **Launcher**: Opens Launcher Settings in a compact 380dp floating frosted-glass right drawer (`Theme.LauncherSettings`) over the dimmed Home screen, styled with small 11sp–12sp tvOS fonts, slim 32dp rows, 26dp segmented chips, CLOSE button, and click-scrim-to-dismiss.
   - **TV**: Directly opens default Android TV Settings (`com.android.tv.settings`).
 - **Media Player Architecture Specification**: Complete source code and design specification archived in [`docs/MEDIA_PLAYER_WIDGET_SPEC.md`](docs/MEDIA_PLAYER_WIDGET_SPEC.md) for future rebuilds. (Source removed from active build to keep launcher lightweight due to Android TV Cobalt audio background tearing).
+- **Continue Watching R&D Specification**: Complete technical research, system schema (`watch_next_program`), and app compatibility matrix (Netflix, Prime, Hotstar, Zee5, YouTube, Sony LIV, Hoichoi) archived in [`docs/CONTINUE_WATCHING_SPEC.md`](docs/CONTINUE_WATCHING_SPEC.md).
 - **1-Click Rollback Script v2**: `restore-all-v2.ps1` allows independently toggling the sports feature (`-SportsOnly` / `-EnableSports`), closing ADB (`-CloseAdb`), or performing a 100% full factory restore to bloated Android TV.
+- **TV State Checkpoint & Restore**: `checkpoint-tv-state.ps1` captures live TV APK, debloat list, DNS, and accessibility state into `backup/checkpoint-mitv-axfr1/`; `restore-checkpoint.ps1` reverts future changes back to the exact checkpoint anytime.
 
 ---
 

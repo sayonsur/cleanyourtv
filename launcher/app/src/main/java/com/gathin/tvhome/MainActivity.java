@@ -1791,24 +1791,23 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
-    /** The shelf's text for this dock app: its name and, on the cinematic shelf, "Last opened" and the dots. */
+    /** The shelf's text for this dock app: its name and, on the cinematic shelf, the dots. */
     private void fillHero(int position, String label) {
         heroName.setText(label);
         if (!cinematic) return;
-        updateHeroMeta(position);
         updateHeroDots(position);
     }
 
     // ---- cinematic shelf -------------------------------------------------------------------------
 
     /**
-     * The parts that never change: a larger name, the meta line and the dots, the artwork and the scrim, at
+     * The parts that never change: a larger name, the dots, the artwork and the scrim, at
      * scrimPercent of its strength (cinematic_scrim). cinematic_art 0 leaves the artwork out, 0 percent the scrim.
      */
     private void setUpCinematicShelf(int scrimPercent) {
         heroName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 68f);
         heroName.setLetterSpacing(-0.025f);
-        heroMeta.setVisibility(View.INVISIBLE);   // keeps its height, so the name does not jump when it fills in
+        heroMeta.setVisibility(View.GONE);
         heroDots.setVisibility(heroDotsShown ? View.VISIBLE : View.GONE);
         heroArt.setVisibility(heroArtAlpha > 0f ? View.VISIBLE : View.GONE);
         // One stretched bitmap: apply its alpha while drawing instead of through an offscreen buffer.
@@ -1876,20 +1875,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         else heroArt.animate().alpha(heroArtAlpha).setDuration(reducedMotion ? Math.min(ms, Motion.REDUCED_MS) : ms).start();
     }
 
-    /** "Last opened yesterday, 9:40 PM", the time in white; nothing (but the same height) when it was never seen. */
     private void updateHeroMeta(int position) {
-        long when = LastOpened.get(this, adapter.packageAt(position));
-        if (when <= 0) {
-            heroMeta.setVisibility(View.INVISIBLE);
-            return;
-        }
-        String rel = LastOpened.describe(this, when);
-        String text = getString(R.string.last_opened, rel);
-        SpannableString line = new SpannableString(text);
-        int at = text.indexOf(rel);
-        if (at >= 0) line.setSpan(new ForegroundColorSpan(0xFFFFFFFF), at, at + rel.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        heroMeta.setText(line);
-        heroMeta.setVisibility(View.VISIBLE);
+        if (heroMeta != null) heroMeta.setVisibility(View.GONE);
     }
 
     /** One dot per dock app, the focused one drawn long and white. Hebrew docks start on the right, so do the dots. */
