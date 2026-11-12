@@ -213,6 +213,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** vpn_pill: the VPN shown as its own pill (btnVpn) instead of a badge in the network pill. Off with top_menu. */
     private boolean vpnPill;
     private TextView btnVpn;
+    private boolean sportsRecommendation;
     /** The VpnBadge pill state btnVpn shows, so a refresh that changes nothing does not restyle it. */
     private int vpnPillState = VpnBadge.PILL_HIDDEN;
     /** icon_only_vpn: the VPN pill is a round lock button; off, it keeps the plain glass look saved here. */
@@ -319,6 +320,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** fill_dock false: how many dock slots held an app when reorder mode started. */
     private int dockedAtStart;
     private View btnReorder;
+    private View btnSports;
     /** dock_apps as loaded (config.xml or a theme): a saved Order only applies while these are unchanged. */
     private List<String> dockApps;
     /** fill_dock false: the dock can have empty slots, which reorder mode leaves out and restores afterwards. */
@@ -464,6 +466,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         sourcePanelAction = cfg.sourcePanelAction;
         sourcePanelExtra = cfg.sourcePanelExtra;
         coocaaSources = cfg.coocaaSources;
+        sportsRecommendation = cfg.sportsRecommendation;
 
         root = findViewById(R.id.root);
         root.setBackgroundColor(cfg.backgroundColor);
@@ -776,18 +779,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return true;
         });
         launcherSettingsButton = cfg.launcherSettingsButton;
-        if (launcherSettingsButton) {
-            ((TextView) btnSettings).setText(R.string.launcher_settings);
-            ((TextView) btnSettings).setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_home_settings_pill, 0, 0, 0);
-        }
-        btnSettings.setOnClickListener(v -> {
-            if (launcherSettingsButton) startActivityForResult(
-                    new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST);
-            else open(systemIntent(Settings.ACTION_SETTINGS));
-        });
+        ((TextView) btnSettings).setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_settings, 0, 0, 0);
+        btnSettings.setContentDescription(getString(R.string.settings));
+        btnSettings.setOnClickListener(v -> showSettingsChoicePopup());
         btnReorder = findViewById(R.id.btnReorder);
         btnReorder.setOnClickListener(v -> toggleReorder());
         btnReorder.setVisibility(cfg.reorderButton ? View.VISIBLE : View.GONE);
+        btnSports = findViewById(R.id.btnSports);
+        btnSports.setOnClickListener(v -> showSportsPopup());
+        btnSports.setVisibility(cfg.sportsRecommendation ? View.VISIBLE : View.GONE);
+
         if (!cfg.showNetworkPill) btnWifi.setVisibility(View.GONE);
         showInputsPill = cfg.showInputsPill;
         showInputsMenuRow = cfg.showInputsPill;
@@ -866,10 +867,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         btnVpn.setOnKeyListener(pillKeys);
         btnSettings.setOnKeyListener(pillKeys);
         btnReorder.setOnKeyListener(pillKeys);
+        btnSports.setOnKeyListener(pillKeys);
         btnLibraryTop.setOnKeyListener(pillKeys);
         for (View button : topAppButtons) button.setOnKeyListener(pillKeys);
         if (advancedEffects) {
-            List<View> pills = new ArrayList<>(Arrays.asList(btnInputs, btnWifi, btnVpn, btnReorder, btnLibraryTop, btnSettings));
+            List<View> pills = new ArrayList<>(Arrays.asList(btnInputs, btnWifi, btnVpn, btnSports, btnReorder, btnLibraryTop, btnSettings));
             pills.addAll(topAppButtons);
             for (View button : pills) {
                 button.setOnFocusChangeListener((view, focused) -> view.animate()
@@ -1864,24 +1866,23 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
-    /** The shelf's text for this dock app: its name and, on the cinematic shelf, "Last opened" and the dots. */
+    /** The shelf's text for this dock app: its name and, on the cinematic shelf, the dots. */
     private void fillHero(int position, String label) {
         heroName.setText(label);
         if (!cinematic) return;
-        updateHeroMeta(position);
         updateHeroDots(position);
     }
 
     // ---- cinematic shelf -------------------------------------------------------------------------
 
     /**
-     * The parts that never change: a larger name, the meta line and the dots, the artwork and the scrim, at
+     * The parts that never change: a larger name, the dots, the artwork and the scrim, at
      * scrimPercent of its strength (cinematic_scrim). cinematic_art 0 leaves the artwork out, 0 percent the scrim.
      */
     private void setUpCinematicShelf(int scrimPercent) {
         heroName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 68f);
         heroName.setLetterSpacing(-0.025f);
-        heroMeta.setVisibility(View.INVISIBLE);   // keeps its height, so the name does not jump when it fills in
+        heroMeta.setVisibility(View.GONE);
         heroDots.setVisibility(heroDotsShown ? View.VISIBLE : View.GONE);
         heroArt.setVisibility(heroArtAlpha > 0f ? View.VISIBLE : View.GONE);
         // One stretched bitmap: apply its alpha while drawing instead of through an offscreen buffer.
@@ -1949,20 +1950,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         else heroArt.animate().alpha(heroArtAlpha).setDuration(reducedMotion ? Math.min(ms, Motion.REDUCED_MS) : ms).start();
     }
 
-    /** "Last opened yesterday, 9:40 PM", the time in white; nothing (but the same height) when it was never seen. */
     private void updateHeroMeta(int position) {
-        long when = LastOpened.get(this, adapter.packageAt(position));
-        if (when <= 0) {
-            heroMeta.setVisibility(View.INVISIBLE);
-            return;
-        }
-        String rel = LastOpened.describe(this, when);
-        String text = getString(R.string.last_opened, rel);
-        SpannableString line = new SpannableString(text);
-        int at = text.indexOf(rel);
-        if (at >= 0) line.setSpan(new ForegroundColorSpan(0xFFFFFFFF), at, at + rel.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        heroMeta.setText(line);
-        heroMeta.setVisibility(View.VISIBLE);
+        if (heroMeta != null) heroMeta.setVisibility(View.GONE);
     }
 
     /** One dot per dock app, the focused one drawn long and white. Hebrew docks start on the right, so do the dots. */

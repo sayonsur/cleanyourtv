@@ -88,6 +88,7 @@ public class HomeKeyService extends AccessibilityService {
     private GamepadPassthrough gamepads;
     /** Screen-off receiver while guard_off_in_standby is set; null otherwise. */
     private BroadcastReceiver standbyExit;
+    private BroadcastReceiver volumeReceiver;
     /** disableSelf is how this service leaves for standby, not the user turning it off. */
     private boolean steppingOut;
     /** The bound helper, so the opt-in broadcast can arm it without waiting for a new connection. */
@@ -97,7 +98,38 @@ public class HomeKeyService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         running = this;
+        VolumeOverlay.reset();
         settingsScancodes = getResources().getIntArray(R.array.settings_key_scancodes);
+        if (volumeReceiver == null) {
+            volumeReceiver = new BroadcastReceiver() {
+                private int lastVal = -1;
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if ("com.gathin.tvhome.TEST_VOLUME".equals(intent.getAction())) {
+                        int dir = intent.getIntExtra("direction", VolumeOverlay.DIRECTION_UP);
+                        VolumeOverlay.show(HomeKeyService.this, dir);
+                        return;
+                    }
+                    if ("android.media.VOLUME_CHANGED_ACTION".equals(intent.getAction())) {
+                        int streamType = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1);
+                        int val = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1);
+                        int prev = intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", lastVal);
+                        android.util.Log.d("VolumeOverlay", "VOLUME_CHANGED: type=" + streamType + ", val=" + val + ", prev=" + prev);
+                        if (streamType == android.media.AudioManager.STREAM_MUSIC || streamType == -1) {
+                            if (val > prev && prev >= 0) {
+                                VolumeOverlay.show(HomeKeyService.this, VolumeOverlay.DIRECTION_UP);
+                            } else if (val < prev && prev >= 0) {
+                                VolumeOverlay.show(HomeKeyService.this, VolumeOverlay.DIRECTION_DOWN);
+                            }
+                            lastVal = val;
+                        }
+                    }
+                }
+            };
+            IntentFilter volumeFilter = new IntentFilter("android.media.VOLUME_CHANGED_ACTION");
+            volumeFilter.addAction("com.gathin.tvhome.TEST_VOLUME");
+            registerReceiver(volumeReceiver, volumeFilter);
+        }
         // The service is directBootAware: Android 11 skips a service that is not while the user is still
         // locked at boot, writes accessibility_enabled=0 and, on TCL G03 firmware, never binds it after the
         // unlock. Config.load reads credential-protected storage, so wait for the unlock before reading it.
@@ -140,6 +172,13 @@ public class HomeKeyService extends AccessibilityService {
         if (running == this) running = null;
         RemoteKeys.release(this);
         stopWaitingForUnlock();
+        if (volumeReceiver != null) {
+            try {
+                unregisterReceiver(volumeReceiver);
+            } catch (RuntimeException ignored) {
+            }
+            volumeReceiver = null;
+        }
         if (screenOnReceiver != null) unregisterReceiver(screenOnReceiver);
         if (standbyExit != null) {
             try {
@@ -150,6 +189,7 @@ public class HomeKeyService extends AccessibilityService {
         }
         if (gamepads != null) gamepads.stop();
         if (consumeVolumeKeys) VolumeKeys.stop();
+        VolumeOverlay.reset();
         super.onDestroy();
     }
 
@@ -258,6 +298,20 @@ public class HomeKeyService extends AccessibilityService {
         if (powerOnUntil != 0 && event.getAction() == KeyEvent.ACTION_DOWN
                 && event.getKeyCode() != KeyEvent.KEYCODE_POWER && event.getKeyCode() != KeyEvent.KEYCODE_WAKEUP) {
             powerOnUntil = 0;
+        }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
+                || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN
+                || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_MUTE) {
+            android.util.Log.d("VolumeOverlay", "onKeyEvent volume: " + event.getKeyCode() + ", action=" + event.getAction());
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP) {
+                    VolumeOverlay.show(this, VolumeOverlay.DIRECTION_UP);
+                } else if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                    VolumeOverlay.show(this, VolumeOverlay.DIRECTION_DOWN);
+                } else if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_MUTE) {
+                    VolumeOverlay.show(this, VolumeOverlay.DIRECTION_MUTE);
+                }
+            }
         }
         if (consumeVolumeKeys && VolumeKeys.handle(this, event)) return true;
         // A scancode entry is more specific than any keycode, so it goes first.

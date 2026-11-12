@@ -1,0 +1,23 @@
+# Custom debloat list for Xiaomi MiTV-AXFR1
+# Telemetry
+com.miui.tv.analytics
+com.xiaomi.statistic
+com.google.android.feedback
+
+# PatchWall & Ads
+com.mitv.tvhome.atv
+com.xm.webcontent
+com.google.android.tvrecommendations
+android.autoinstalls.config.xioami.dangal
+com.mitv.tvhome.mitvplus
+
+# Background bloat
+com.xiaomi.mitv.tvmanager
+com.xiaomi.mitv.handbook
+com.xiaomo.tv.milegal
+
+# Preloaded
+com.xiaomi.mimusic2
+com.google.android.play.games
+com.google.android.videos
+com.mitv.dream
